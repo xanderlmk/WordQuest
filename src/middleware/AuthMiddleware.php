@@ -1,23 +1,29 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+
+require_once '../src/config/session.php';
+require_once '../src/controllers/AuthController.php';
+require_once '../src/config/database.php';
 
 class AuthMiddleware {
-    public static function checkSession() {
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION']);
-            $authController = new AuthController();
-            $userId = $authController->verifyToken($token);
+    private $pdo;
+    private $authController;
 
+    public function __construct() {
+        global $pdo;
+
+        $this->pdo = $pdo;
+        $this->authController = new AuthController($pdo);
+    }
+
+    public function checkSession() {
+        if (isset($_SESSION['auth_token'])) {
+            $userId = $this->authController->refreshToken($_SESSION['auth_token']);
             if ($userId) {
-                $newToken = $authController->refreshToken($token);
-                header('Authorization: Bearer ' . $newToken);
-
-                return $userId;
+                return true;
             }
         }
 
-        header('HTTP/1.1 401 Unauthorized');
-        echo json_encode(['error' => 'Unauthorized']);
+        header('Location: login.php');
         exit();
     }
 }

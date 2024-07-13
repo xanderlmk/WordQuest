@@ -1,7 +1,13 @@
 <?php
 
+require_once '../src/config/session.php';
 
-echo "Hello, World!";
+function console_log($message) {
+    echo "<script>console.log('PHP: " . addslashes($message) . "');</script>";
+}
+
+console_log("index.php");
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
