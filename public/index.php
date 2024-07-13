@@ -1,7 +1,7 @@
 <?php
 
+require_once '../src/config/session.php';
 
-echo "Hello, World!";
 ?>
 <!DOCTYPE html>
 <html lang="en">

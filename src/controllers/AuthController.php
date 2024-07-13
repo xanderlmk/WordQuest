@@ -1,11 +1,19 @@
 <?php
+
+require_once '../src/config/session.php';
 require_once __DIR__ . '/../config/database.php';
 
 class AuthController {
-    public function login($email, $password) {
-        global $pdo;
 
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
+    private $pdo;
+
+    public function __construct() {
+        global $pdo;
+        $this->pdo = $pdo;
+    }
+
+    public function login($email, $password) {
+        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = ?');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
@@ -17,9 +25,7 @@ class AuthController {
     }
 
     public function signup($username, $email, $password) {
-        global $pdo;
-
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ? OR username = ?');
+        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = ? OR username = ?');
         $stmt->execute([$email, $username]);
 
         if ($stmt->rowCount() > 0) {
@@ -27,10 +33,10 @@ class AuthController {
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
+        $stmt = $this->pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
 
         if ($stmt->execute([$username, $email, $hash])) {
-            return $this->generateToken($pdo->lastInsertId());
+            return $this->generateToken($this->pdo->lastInsertId());
         } else {
             return false;
         }
@@ -47,7 +53,7 @@ class AuthController {
         return $token;
     }
 
-    public function verifyToken($token) {
+    private function verifyToken($token) {  ////
         $payload = json_decode(base64_decode($token), true);
     
         if (json_last_error() !== JSON_ERROR_NONE || !isset($payload['id']) || !isset($payload['exp'])) {
@@ -58,7 +64,18 @@ class AuthController {
             return false;
         }
     
-        return $payload['id'];
+        $userId = $payload['id'];
+    
+        // Verify the user ID exists in the database
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM users WHERE id = ?');
+        $stmt->execute([$userId]);
+        $userExists = $stmt->fetchColumn();
+
+        if ($userExists) {
+            return $userId;
+        } else {
+            return false;
+        }
     }
 
     public function refreshToken($token) {

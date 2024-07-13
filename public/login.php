@@ -1,5 +1,6 @@
 <?php
-session_start();
+
+require_once '../src/config/session.php';
 require_once '../src/controllers/AuthController.php';
 
 $authController = new AuthController();
@@ -11,13 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $token = $authController->login($email, $password);
     
     if ($token) {
-        echo "<script>console.log('Token: " . $token . "');</script>";
-        echo "<p style='color: green;'>Token: " . htmlspecialchars($token) . "</p>";
+        $_SESSION['auth_token'] = $token;
+        header('Location: game.php');
 
-        //header('Authorization: Bearer ' . $token);
-        //header('Location: index.php');
-
-        $log_token = $token;
         exit();
 
     } else {
@@ -37,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <h2>Login</h2>
     <?php if (isset($error)): ?>
-        <p><?php echo $error; ?></p>
+        <p style="color: red;"><?php echo $error; ?></p>
     <?php endif; ?>
     <form method="POST" action="">
         <label for="email">Email:</label>

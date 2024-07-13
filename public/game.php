@@ -1,8 +1,10 @@
 <?php
-session_start();
+
+require_once '../src/config/session.php';
 require_once '../src/middleware/AuthMiddleware.php';
 
-$userId = AuthMiddleware::checkSession();
+$authMiddleware = new AuthMiddleware();
+$authMiddleware->checkSession();
 
 ?>
 
