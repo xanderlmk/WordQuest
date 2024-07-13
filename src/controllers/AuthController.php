@@ -53,7 +53,7 @@ class AuthController {
         return $token;
     }
 
-    private function verifyToken($token) {  ////
+    public function verifyToken($token) {  ////
         $payload = json_decode(base64_decode($token), true);
     
         if (json_last_error() !== JSON_ERROR_NONE || !isset($payload['id']) || !isset($payload['exp'])) {

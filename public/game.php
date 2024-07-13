@@ -3,6 +3,12 @@
 require_once '../src/config/session.php';
 require_once '../src/middleware/AuthMiddleware.php';
 
+function console_log($message) {
+    echo "<script>console.log('PHP: " . addslashes($message) . "');</script>";
+}
+
+console_log("game.php");
+
 $authMiddleware = new AuthMiddleware();
 $authMiddleware->checkSession();
 

@@ -9,27 +9,23 @@ class UserController {
     private $pdo;
     private $authController;
 
-    public function __construct($pdo, $authController) {
-        $this->$pdo = $pdo;
-        $this->$authController = new AuthController($this->$pdo);
+    public function __construct() {
+        global $pdo;
+
+        $this->pdo = $pdo;
+        $this->authController = new AuthController($this->pdo);
     }
 
     public static function isAuthenticated() {
         return isset($_SESSION['auth_token']);
     }
 
-    public function getUser() {
+    public function getUser() { // This should not be static to access $this
         if (!self::isAuthenticated()) {
             return null;
         }
 
-        $userId = $this->$authController->verifyToken($_SESSION['auth_token']);
-
-        if ($userId) {
-            return self::getUserById($userId);
-        }
-
-        return null;
+        return $this->getUserByToken($_SESSION['auth_token']);
     }
 
     public static function logout() {
@@ -37,6 +33,12 @@ class UserController {
         header('Location: login.php');
 
         exit();
+    }
+
+    public static function handleLogout() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+            self::logout();
+        }
     }
 
     public static function requireAuth() {
@@ -47,11 +49,23 @@ class UserController {
         }
     }
 
-    private function getUserById($userId) {
-        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE id = ?');
-        $stmt->execute([$userId]);
-        
-        return $stmt->fetch();
+    public static function redirectIfAuthenticated() {
+        if (self::isAuthenticated()) {
+            header('Location: index.php');
+            exit();
+        }
+    }
+
+    private function getUserByToken($token) {
+        $userId = $this->authController->verifyToken($token);
+
+        if ($userId) {
+            $stmt = $this->pdo->prepare('SELECT username, email FROM users WHERE id = ?');
+            $stmt->execute([$userId]);
+
+            return $stmt->fetch();
+        }
+        return null;
     }
 }
 ?>
