@@ -1,12 +1,10 @@
 <?php
 
 require_once '../src/config/session.php';
+require_once '../src/config/logger.php';
 
-function console_log($message) {
-    echo "<script>console.log('PHP: " . addslashes($message) . "');</script>";
-}
-
-console_log("index.php");
+$logger = new Logger();
+$logger->console_log("index.php");
 
 ?>
 <!DOCTYPE html>

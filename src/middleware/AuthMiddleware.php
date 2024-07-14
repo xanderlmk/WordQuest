@@ -18,6 +18,7 @@ class AuthMiddleware {
     public function checkSession() {
         if (isset($_SESSION['auth_token'])) {
             $userId = $this->authController->refreshToken($_SESSION['auth_token']);
+            
             if ($userId) {
                 return true;
             }

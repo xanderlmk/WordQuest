@@ -1,11 +1,14 @@
 <?php
 
 require_once '../src/config/session.php';
+require_once '../src/config/logger.php';
 require_once '../src/controllers/AuthController.php';
 require_once '../src/controllers/UserController.php';
 
-UserController::redirectIfAuthenticated();
+$logger = new Logger();
+$logger->console_log("signup.php");
 
+UserController::redirectIfAuthenticated();
 $authController = new AuthController();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

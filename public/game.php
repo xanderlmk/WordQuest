@@ -1,13 +1,11 @@
 <?php
 
 require_once '../src/config/session.php';
+require_once '../src/config/logger.php';
 require_once '../src/middleware/AuthMiddleware.php';
 
-function console_log($message) {
-    echo "<script>console.log('PHP: " . addslashes($message) . "');</script>";
-}
-
-console_log("game.php");
+$logger = new Logger();
+$logger->console_log("game.php");
 
 $authMiddleware = new AuthMiddleware();
 $authMiddleware->checkSession();

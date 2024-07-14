@@ -1,23 +1,19 @@
 <?php
 
 require_once '../src/config/session.php';
+require_once '../src/config/logger.php';
 require_once '../src/middleware/AuthMiddleware.php';
 require_once '../src/controllers/UserController.php';
 
-function console_log($message) {
-    echo "<script>console.log('PHP: " . addslashes($message) . "');</script>";
-}
-
-console_log("user.php");
+$logger = new Logger();
+$logger->console_log("user.php");
 
 $authMiddleware = new AuthMiddleware();
 $authMiddleware->checkSession();
-console_log("Session checked.");
 
 $userController = new UserController();
 $user = $userController->getUser();
 $userController::handleLogout();
-console_log("User getted.");
 
 if ($user) {
     $username = $user['username'];
