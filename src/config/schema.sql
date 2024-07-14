@@ -11,7 +11,7 @@ CREATE TABLE users (
 CREATE TABLE games (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    secret_word VARCHAR(5) NOT NULL,
+    secret_word VARCHAR(8) NOT NULL,
     status ENUM('in_progress', 'won', 'lost') DEFAULT 'in_progress',
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NULL,
@@ -28,10 +28,18 @@ CREATE TABLE scores (
 );
 
 -- Word Table
--- CREATE TABLE word_x (
---     id INT AUTO_INCREMENT PRIMARY KEY,
---     word VARCHAR(5) UNIQUE NOT NULL
--- );
+CREATE TABLE word_x (   -- in our case from word_4 -> word_8
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    word VARCHAR(x) UNIQUE NOT NULL
+);
+
+--  Fill tables by example words
+
+    -- INSERT INTO words_4 (word) VALUES ('tree'), ('book'), ('star'), ('wolf');
+    -- INSERT INTO words_5 (word) VALUES ('apple'), ('bread'), ('crane'), ('flame');
+    -- INSERT INTO words_6 (word) VALUES ('orange'), ('planet'), ('stream'), ('bridge');
+    -- INSERT INTO words_7 (word) VALUES ('monster'), ('picture'), ('teacher'), ('village');
+    -- INSERT INTO words_8 (word) VALUES ('elephant'), ('mountain'), ('alphabet'), ('building');
 
 -- Attempts Table
 CREATE TABLE attempts (
