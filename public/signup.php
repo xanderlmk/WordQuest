@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $token = $authController->signup($username, $email, $password);
     
     if ($token) {
-        header('Authorization: Bearer ' . $token);
-        header('Location: index.php');
+        $_SESSION['auth_token'] = $token;
+        header('Location: user.php');
 
         exit();
 
