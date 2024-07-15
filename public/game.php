@@ -27,6 +27,8 @@ if ($user) {
         exit();
     } else {
         $secretWord = $game['secret_word'];
+        $wordLength = strlen($secretWord);  //  test
+        $maxAttempts = 5;
     }
 } else {
     header('Location: login.php');
@@ -42,14 +44,35 @@ if ($user) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(<?php echo $wordLength; ?>, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: auto;
+        }
+        .grid input {
+            width: 100%;
+            text-align: center;
+            font-size: 2rem;
+            text-transform: uppercase;
+        }
+    </style>
 </head>
 <body>
     <h2>Wordle Game</h2>
-    <?php if ($secretWord): ?>
-        <p>Secret Word: <?php echo htmlspecialchars($secretWord); ?></p>
-    <?php else: ?>
-        <p>No active game found.</p>
-    <?php endif; ?>
+    <form method="POST" action="process_guess.php">
+        <div class="grid">
+            <?php for ($i = 0; $i < $maxAttempts; $i++): ?>
+                <?php for ($j = 0; $j < $wordLength; $j++): ?>
+                    <input type="text" name="guess[<?php echo $i; ?>][<?php echo $j; ?>]" maxlength="1" required>
+                <?php endfor; ?>
+            <?php endfor; ?>
+        </div>
+        <br>
+        <button type="submit">Submit Guess</button>
+    </form>
     <form method="POST" action="">
         <button type="submit" name="logout" value="1">Logout</button>
     </form>
