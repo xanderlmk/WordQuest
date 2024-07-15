@@ -4,6 +4,7 @@ require_once '../src/config/session.php';
 require_once '../src/config/logger.php';
 require_once '../src/middleware/AuthMiddleware.php';
 require_once '../src/controllers/UserController.php';
+require_once '../src/controllers/GameController.php';
 
 $logger = new Logger();
 $logger->console_log("game.php");
@@ -14,13 +15,23 @@ $authMiddleware->checkSession();
 $userController = new UserController();
 $user = $userController->getUser();
 
-$authController = new AuthController();
-$userId = $authController->verifyToken($_SESSION['auth_token']);
+if ($user) {
+    $username = $user['username'];
+    $token = $_SESSION['auth_token'];
 
-$stmt = $pdo->prepare('SELECT secret_word FROM games WHERE user_id = ? AND status = "in_progress"');
-$stmt->execute([$userId]);
+    $gameController = new GameController();
+    $game = $gameController->loadGame($token, $username);
 
-$secretWord = $stmt->fetchColumn();
+    if (!$game) {
+        header('Location: game_settings.php');
+        exit();
+    } else {
+        $secretWord = $game['secret_word'];
+    }
+} else {
+    header('Location: login.php');
+    exit();
+}
 
 ?>
 
