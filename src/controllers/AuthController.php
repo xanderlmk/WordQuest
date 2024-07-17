@@ -1,14 +1,13 @@
 <?php
 
-require_once '../src/config/session.php';
+require_once __DIR__ . '/../config/session.php';
 require_once __DIR__ . '/../config/database.php';
 
 class AuthController {
-
     private $pdo;
+    private $secretKey = 'Test_Secret_Key'; //  TODO: Move into .env
 
-    public function __construct() {
-        global $pdo;
+    public function __construct($pdo) {
         $this->pdo = $pdo;
     }
 
@@ -16,9 +15,12 @@ class AuthController {
         $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = ?');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-
+    
         if ($user && password_verify($password, $user['password'])) {
-            return $this->generateToken($user['id']);
+            $token = $this->generateToken($user['id']);
+            $_SESSION['auth_token'] = $token;
+
+            return $token;
         } else {
             return false;
         }
@@ -36,46 +38,71 @@ class AuthController {
         $stmt = $this->pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
 
         if ($stmt->execute([$username, $email, $hash])) {
-            return $this->generateToken($this->pdo->lastInsertId());
+            $token = $this->generateToken($this->pdo->lastInsertId());
+            $_SESSION['auth_token'] = $token;
+
+            return $token;
         } else {
             return false;
         }
     }
 
-    private function generateToken($userId) {
-        $payload = [
-            'id' => $userId,
-            'exp' => time() + (3 * 24 * 60 * 60) // Token valid for 3 days
-        ];
-
-        $token = base64_encode(json_encode($payload));
-
-        return $token;
+    private function base64UrlEncode($data) {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
-    public function verifyToken($token) {  ////
-        $payload = json_decode(base64_decode($token), true);
+    private function base64UrlDecode($data) {
+        return base64_decode(strtr($data, '-_', '+/'));
+    }
+
+    private function generateToken($userId) {
+        $header = $this->base64UrlEncode(json_encode(['typ' => 'JWT', 'alg' => 'HS256']));
+        $payload = $this->base64UrlEncode(json_encode(['id' => $userId, 'exp' => time() + (3 * 24 * 60 * 60)]));
+        $signature = $this->base64UrlEncode(hash_hmac('sha256', "$header.$payload", $this->secretKey, true));
     
-        if (json_last_error() !== JSON_ERROR_NONE || !isset($payload['id']) || !isset($payload['exp'])) {
+        error_log("Generated token: $header.$payload.$signature");
+        return "$header.$payload.$signature";
+    }
+
+    public function verifyToken($token) {
+        error_log("verifyToken called with token: $token");
+    
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) {
+            error_log("Token does not have 3 parts");
+            return false;
+        }
+    
+        list($header, $payload, $signature) = $parts;
+        $headerDecoded = $this->base64UrlDecode($header);
+        $payloadDecoded = $this->base64UrlDecode($payload);
+        $header = json_decode($headerDecoded, true);
+        $payload = json_decode($payloadDecoded, true);
+    
+        error_log("Header: " . print_r($header, true));
+        error_log("Payload: " . print_r($payload, true));
+    
+        if ($header['alg'] !== 'HS256') {
+            error_log("Algorithm is not HS256");
+            return false;
+        }
+    
+        $expectedSignature = $this->base64UrlEncode(hash_hmac('sha256', "$parts[0].$parts[1]", $this->secretKey, true));
+        error_log("Expected signature: $expectedSignature");
+        error_log("Actual signature: $signature");
+    
+        if ($signature !== $expectedSignature) {
+            error_log("Signature does not match");
             return false;
         }
     
         if ($payload['exp'] < time()) {
+            error_log("Token has expired");
             return false;
         }
     
-        $userId = $payload['id'];
-    
-        // Verify the user ID exists in the database
-        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM users WHERE id = ?');
-        $stmt->execute([$userId]);
-        $userExists = $stmt->fetchColumn();
-
-        if ($userExists) {
-            return $userId;
-        } else {
-            return false;
-        }
+        error_log("Token is valid, user ID: " . $payload['id']);
+        return $payload['id'];
     }
 
     public function refreshToken($token) {
@@ -88,4 +115,5 @@ class AuthController {
         }
     }
 }
+
 ?>
