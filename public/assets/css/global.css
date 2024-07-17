@@ -1,0 +1,32 @@
+body {
+    height: 100vh;
+    width: 100vw;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    margin: 0;
+}
+
+.body-wrapper {
+    width: calc(100% - 16px);
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+
+    padding: 0 8px;
+
+    &.mobile {
+        max-width: 600px;
+    }
+
+    &.desktop {
+        max-width: 1280px;
+    }
+}
