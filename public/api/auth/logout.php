@@ -1,6 +1,6 @@
 <?php
 
-require_once '../../src/config/session.php';
+require_once '../../../src/config/session.php';
 
 header('Content-Type: application/json');
 

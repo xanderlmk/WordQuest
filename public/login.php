@@ -1,5 +1,22 @@
 <?php
 
+require_once '../src/config/session.php';
+require_once '../src/config/database.php';
+require_once '../src/controllers/AuthController.php';
+
+$authController = new AuthController($pdo);
+
+if (isset($_SESSION['auth_token'])) {
+    $token = $_SESSION['auth_token'];
+    error_log("SESSION: $token");
+    $userId = $authController->verifyToken($token);
+
+    if ($userId) {
+        header('Location: index.php');
+        exit();
+    }
+}
+
 $title = "Login";
 ob_start();
 

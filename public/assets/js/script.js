@@ -14,7 +14,7 @@ function login(email, password) {
     .then(data => {
         if (data.success) {
             localStorage.setItem('auth_token', data.token);
-            //window.location.href = 'home.php';
+            window.location.href = 'index.php';
         } else {
             document.getElementById('error-message').innerText = data.error;
         }
@@ -35,7 +35,7 @@ function signup(username, email, password) {
     .then(data => {
         if (data.success) {
             localStorage.setItem('auth_token', data.token);
-            //window.location.href = 'home.php';
+            window.location.href = 'index.php';
         } else {
             document.getElementById('error-message').innerText = data.error;
         }
